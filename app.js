@@ -145,7 +145,7 @@ function renderPracticeShell() {
   const done = practice.idx;
   const total = practice.queue.length;
   el.innerHTML =
-    '<div class="practice-top"><span>' + subjectOf(q.subj).name + ' 第 ' + q.qno + ' 題</span>' +
+    '<div class="practice-top"><span>' + q.year + ' 年 · ' + subjectOf(q.subj).name + ' 第 ' + q.qno + ' 題</span>' +
     '<span>第 ' + (done + 1) + ' / ' + total + ' 題</span></div>' +
     '<div class="card q-card"><div class="q-head">✅ ' + practice.session.correct + ' 答對 · ❌ ' +
     (done - practice.session.correct) + ' 答錯</div>' +
