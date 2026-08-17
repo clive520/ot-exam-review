@@ -10,38 +10,11 @@
 // ============================================================
 const fs = require('fs');
 const path = require('path');
-const TOOLS = process.env.PDF_TOOLS || path.join(__dirname, '..', 'tools');
-
-const PDFJS = require(path.join(TOOLS, 'node_modules', 'pdfjs-dist', 'build', 'pdf.js'));
-PDFJS.disableWorker = true;
-PDFJS.disableFontFace = true;
-
-// ---- Node 環境補丁(pdf.js 1.x 在 Node 執行所需)----
-try {
-  Object.defineProperty(globalThis, 'navigator', {
-    value: { userAgent: 'Mozilla/5.0 (X11; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0' },
-    configurable: true, writable: true,
-  });
-} catch (e) {}
-if (typeof document === 'undefined') {
-  const makeStyleEl = () => ({
-    sheet: { insertRule: () => 0, cssRules: [] },
-    remove: () => {}, appendChild: () => {}, id: '',
-  });
-  global.document = {
-    createElement: () => makeStyleEl(),
-    documentElement: { getElementsByTagName: () => [{ appendChild: () => {} }] },
-    head: { appendChild: () => {} }, body: { appendChild: () => {} },
-    addEventListener: () => {}, removeEventListener: () => {},
-    fonts: { add: () => {}, delete: () => {}, ready: Promise.resolve() },
-  };
-}
-if (typeof HTMLElement === 'undefined') global.HTMLElement = class HTMLElement {};
-if (typeof Element === 'undefined') global.Element = class Element {};
-if (typeof HTMLImageElement === 'undefined') global.HTMLImageElement = class HTMLImageElement {};
-if (typeof Image === 'undefined') global.Image = class Image {};
-
-const { createCanvas } = require(path.join(TOOLS, 'node_modules', '@napi-rs', 'canvas'));
+// 優先使用 pdf_render 的新版 pdfjs-dist 4.x (legacy build, 修復舊版渲染崩潰)
+const RENDER_TOOLS = process.env.PDF_RENDER_TOOLS ||
+  path.join(__dirname, '..', '..', 'pdf_render');
+const PDFJS = require(path.join(RENDER_TOOLS, 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.mjs'));
+const { createCanvas } = require(path.join(RENDER_TOOLS, 'node_modules', '@napi-rs', 'canvas'));
 
 class NapiCanvasFactory {
   create(w, h) { const canvas = createCanvas(w, h); return { canvas, context: canvas.getContext('2d') }; }
@@ -90,15 +63,16 @@ async function main() {
   fs.mkdirSync(imgDir, { recursive: true });
 
   const data = new Uint8Array(fs.readFileSync(pdfPath));
-  const pdf = await PDFJS.getDocument({ data }).promise;
+  const pdf = await PDFJS.getDocument({ data, useWorker: false }).promise;
   console.log('頁數:', pdf.numPages, '| 倍率:', SCALE);
 
   const figures = [];
   const pages = [];
+  let prevPageLastNo = null; // 上一頁最後題號(供跨頁圖片對應)
 
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
-    const viewport = page.getViewport(SCALE);
+    const viewport = page.getViewport({ scale: SCALE });
     const pw = Math.ceil(viewport.width), ph = Math.ceil(viewport.height);
 
     // 1) 整頁渲染
@@ -112,10 +86,20 @@ async function main() {
     // 2) 題號行位置(轉成渲染像素座標: y 軸向下)
     const tc = await page.getTextContent();
     const qLines = [];
+    let lastNo = 0;
+    let first = true; // 每頁題號序列重新開始: 頁面第一個題號無條件接受
     for (const it of tc.items) {
       const s = (it.str || '').trim();
       const m = s.match(/^(\d{1,3})\./);
-      if (m) qLines.push({ no: parseInt(m[1], 10), py: Math.round(ph - it.transform[5] * SCALE) });
+      // 之後的題號必須連續遞增,避免選項文字「4.5歲」誤判為題號
+      if (m) {
+        const n = parseInt(m[1], 10);
+        if (first || n === lastNo + 1) {
+          qLines.push({ no: n, py: Math.round(ph - it.transform[5] * SCALE) });
+          lastNo = n;
+        }
+        first = false;
+      }
     }
     qLines.sort((a, b) => a.py - b.py);
 
@@ -123,13 +107,14 @@ async function main() {
     const data32 = ctx.getImageData(0, 0, pw, ph).data;
     const bands = detectBands(pw, ph, data32);
 
-    // 4) 區塊 → 題號(找區塊上方的最近題號行) → 裁切
+    // 4) 區塊 → 題號(找區塊上方的最近題號行; 頁首區塊用上一頁最後題號) → 裁切
     let figIdx = 0;
     for (const [by0, by1] of bands) {
       let owner = null;
       for (const q of qLines) {
         if (q.py < by0) owner = q; else break;
       }
+      if (!owner && prevPageLastNo !== null) owner = { no: prevPageLastNo };
       // 區塊內暗像素的 X 範圍
       let minX = pw, maxX = -1;
       for (let y = by0; y <= by1; y++) {
@@ -168,6 +153,7 @@ async function main() {
       figIdx++;
     }
     console.log('第' + p + '頁完成 (圖形區塊: ' + bands.length + ')');
+    if (qLines.length) prevPageLastNo = qLines[qLines.length - 1].no;
   }
 
   fs.writeFileSync(path.join(outDir, 'image_map.json'),

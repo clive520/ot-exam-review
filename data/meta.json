@@ -7,42 +7,258 @@
   ],
   "subjects": [
     {
+      "key": "110-0105",
+      "code": "0105",
+      "name": "解剖學與生理學",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "110-0801",
+      "code": "0801",
+      "name": "職能治療學概論",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "110-0802",
+      "code": "0802",
+      "name": "生理障礙職能治療學",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "110-0803",
+      "code": "0803",
+      "name": "心理障礙職能治療學",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "110-0804",
+      "code": "0804",
+      "name": "小兒職能治療學",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "110-0805",
+      "code": "0805",
+      "name": "職能治療技術學",
+      "year": 110,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0105",
+      "code": "0105",
+      "name": "解剖學與生理學",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0801",
+      "code": "0801",
+      "name": "職能治療學概論",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0802",
+      "code": "0802",
+      "name": "生理障礙職能治療學",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0803",
+      "code": "0803",
+      "name": "心理障礙職能治療學",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0804",
+      "code": "0804",
+      "name": "小兒職能治療學",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "111-0805",
+      "code": "0805",
+      "name": "職能治療技術學",
+      "year": 111,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0105",
+      "code": "0105",
+      "name": "解剖學與生理學",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0801",
+      "code": "0801",
+      "name": "職能治療學概論",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0802",
+      "code": "0802",
+      "name": "生理障礙職能治療學",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0803",
+      "code": "0803",
+      "name": "心理障礙職能治療學",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0804",
+      "code": "0804",
+      "name": "小兒職能治療學",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "112-0805",
+      "code": "0805",
+      "name": "職能治療技術學",
+      "year": 112,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0105",
+      "code": "0105",
+      "name": "解剖學與生理學",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0801",
+      "code": "0801",
+      "name": "職能治療學概論",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0802",
+      "code": "0802",
+      "name": "生理障礙職能治療學",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0803",
+      "code": "0803",
+      "name": "心理障礙職能治療學",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0804",
+      "code": "0804",
+      "name": "小兒職能治療學",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "113-0805",
+      "code": "0805",
+      "name": "職能治療技術學",
+      "year": 113,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0105",
+      "code": "0105",
+      "name": "解剖學與生理學",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0801",
+      "code": "0801",
+      "name": "職能治療學概論",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0802",
+      "code": "0802",
+      "name": "生理障礙職能治療學",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0803",
+      "code": "0803",
+      "name": "心理障礙職能治療學",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0804",
+      "code": "0804",
+      "name": "小兒職能治療學",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "114-0805",
+      "code": "0805",
+      "name": "職能治療技術學",
+      "year": 114,
+      "examCode": "OT"
+    },
+    {
+      "key": "115-0105",
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 115,
       "examCode": "OT"
     },
     {
+      "key": "115-0801",
       "code": "0801",
       "name": "職能治療學概論",
       "year": 115,
       "examCode": "OT"
     },
     {
+      "key": "115-0802",
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 115,
       "examCode": "OT"
     },
     {
+      "key": "115-0803",
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 115,
       "examCode": "OT"
     },
     {
+      "key": "115-0804",
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 115,
       "examCode": "OT"
     },
     {
+      "key": "115-0805",
       "code": "0805",
       "name": "職能治療技術學",
       "year": 115,
       "examCode": "OT"
     }
   ],
-  "exportedAt": "2026-08-17T16:15:34.047Z",
-  "totalQuestions": 480
+  "exportedAt": "2026-08-17T16:36:56.892Z",
+  "totalQuestions": 2880
 }

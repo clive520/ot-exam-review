@@ -57,9 +57,15 @@ function parseQuestions(examTxt) {
     if (!t) continue;
     const qm = t.match(/^(\d{1,3})\.(.*)$/);
     if (qm) {
-      if (cur) questions.push(cur);
-      cur = { no: parseInt(qm[1], 10), qPieces: [qm[2].trim()], opts: { A: [], B: [], C: [], D: [] }, last: 'q' };
-      continue;
+      const n = parseInt(qm[1], 10);
+      // 題號嚴格連續(1,2,3...80): 非連續的「數字.」視為選項折行文字
+      // (例: 選項文字「4.5歲:...」開頭的 4. 不得誤判為新題)
+      const isNewQ = !cur || n === cur.no + 1;
+      if (isNewQ) {
+        if (cur) questions.push(cur);
+        cur = { no: n, qPieces: [qm[2].trim()], opts: { A: [], B: [], C: [], D: [] }, last: 'q' };
+        continue;
+      }
     }
     const om = t.match(/^([ABCD])\.(.*)$/);
     if (om && cur) { cur.last = om[1]; cur.opts[cur.last].push(om[2].trim()); continue; }

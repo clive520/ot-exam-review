@@ -51,7 +51,7 @@ async function main() {
       code TEXT NOT NULL,
       name TEXT NOT NULL,
       year INTEGER NOT NULL,
-      UNIQUE (exam_type_id, code)
+      UNIQUE (exam_type_id, year, code)
     );
     CREATE TABLE questions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +85,8 @@ async function main() {
     const header = rows[0];
     const idx = {};
     header.forEach((h, i) => idx[h] = i);
-    const subjInfo = insSubj.run(examTypeId, subj.code, subj.name, cfg.year);
+    const subjYear = subj.year !== undefined ? subj.year : cfg.year;
+  const subjInfo = insSubj.run(examTypeId, subj.code, subj.name, subjYear);
     const subjectId = Number(subjInfo.lastInsertRowid);
     let count = 0;
 

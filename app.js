@@ -36,7 +36,10 @@ function latestAttempt(qid) {
   for (const a of attempts) if (a.qid === qid && (!hit || a.ts > hit.ts)) hit = a;
   return hit;
 }
-function subjectOf(code) { return META.subjects.find(s => s.code === code); }
+function subjectOf(key) { return META.subjects.find(s => s.key === key); }
+function subjectByYearCode(year, code) {
+  return META.subjects.find(s => s.year === year && s.code === code);
+}
 
 /* ---------------- 載入資料 ---------------- */
 async function loadData() {
@@ -70,13 +73,14 @@ function renderHome() {
   if (!META) { el.innerHTML = '<div class="empty-tip">載入題庫中…</div>'; return; }
   let html = '';
   for (const exam of META.examTypes) {
-    const subs = META.subjects.filter(s => s.examCode === exam.code);
+    const subs = META.subjects.filter(s => s.examCode === exam.code)
+      .sort((a, b) => b.year - a.year);
     html += '<div class="exam-group"><div class="exam-group-title">🏥 ' + exam.name +
       '（' + subs.length * 80 + ' 題）</div><div class="subj-grid">';
     for (const s of subs) {
-      const cnt = QUESTIONS.filter(q => q.subj === s.code).length;
-      const sel = practice.subjCodes.includes(s.code) ? ' selected' : '';
-      html += '<div class="subj-card' + sel + '" data-code="' + s.code + '" onclick="toggleSubject(\'' + s.code + '\')">' +
+      const cnt = QUESTIONS.filter(q => q.subj === s.key).length;
+      const sel = practice.subjCodes.includes(s.key) ? ' selected' : '';
+      html += '<div class="subj-card' + sel + '" data-code="' + s.key + '" onclick="toggleSubject(\'' + s.key + '\')">' +
         '<div class="subj-name">' + s.name + '</div>' +
         '<div class="subj-meta">' + s.year + ' 年 · ' + cnt + ' 題</div></div>';
     }
@@ -275,7 +279,9 @@ function renderStats() {
       '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
       '<div class="bar-pct">' + pct + '%</div></div>';
   }
-  html += '<button class="btn-secondary" onclick="clearAttempts()">清除本機作答紀錄</button></div>';
+  html += '<button class="btn-secondary" onclick="clearAttempts()">清除本機作答紀錄</button>' +
+    (fb && fb.user ? '<div style="margin-top:10px;font-size:12px;color:var(--muted)">我的使用者 ID：<code id="myUid" style="word-break:break-all">' + fb.user.uid + '</code> <button class="mini-btn" onclick="navigator.clipboard.writeText(document.getElementById(\'myUid\').textContent);alert(\'已複製\')">複製</button></div>' : '') +
+    '</div>';
   el.innerHTML = html;
 }
 function clearAttempts() {
@@ -417,7 +423,7 @@ function renderAdmin() {
         html += '<div class="card admin-report" style="border-left:4px solid ' +
           (r.status === 'pending' ? 'var(--bad)' : r.status === 'fixed' ? 'var(--ok)' : 'var(--border)') + '">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
-          '<b>[' + esc(r.type) + '] ' + (subjectOf(r.subjectCode) ? subjectOf(r.subjectCode).name : r.subjectCode) +
+          '<b>[' + esc(r.type) + '] ' + (subjectByYearCode(r.year, r.subjectCode) ? subjectByYearCode(r.year, r.subjectCode).name : r.subjectCode) +
           '（' + r.year + ' 年）第 ' + r.qno + ' 題</b>' +
           '<span class="' + statusClass + '">' + statusLabel + '</span></div>' +
           '<div class="q-preview" style="font-size:12px;color:var(--muted);margin-bottom:6px">' + timeStr + ' · 回報人：' + esc(r.reporterName || '未知') + '</div>' +
