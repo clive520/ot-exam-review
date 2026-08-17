@@ -1,21 +1,18 @@
 /* ============================================================
- * Firebase 設定（Phase 5b）
- * 步驟：
- *   1. 到 https://console.firebase.google.com 建立專案（Blaze 方案）
- *   2. Authentication → 啟用 Google 登入
- *   3. Firestore → 建立資料庫（production 模式）
- *   4. 專案設定 → 一般 → 你的應用程式 → Web 應用程式
- *      複製 firebaseConfig，貼到下面 FIREBASE_CONFIG
- *   5. 部署到 GitHub Pages 後，把網域加入
- *      Authentication → Settings → Authorized domains
- *   6. 把 firestore.rules 的內容貼到 Firestore → Rules
- * 完成後 App 自動出現「Google 登入」按鈕，作答紀錄雲端同步。
+ * Firebase 設定（已填入真實值）
+ * 對應專案：ot-exam-review（Blaze 方案）
+ * 待完成（Firebase Console 手動步驟，見 repo/docs/FIREBASE設定指引.md）：
+ *   - Authentication 啟用 Google 登入
+ *   - Firestore 建立資料庫（production mode）
+ *   - 貼上 firestore.rules 並發佈
+ *   - Authorized domains 加入 clive520.github.io
  * ============================================================ */
 window.FIREBASE_CONFIG = {
-  apiKey: "請填入",
-  authDomain: "請填入",
-  projectId: "請填入",
-  storageBucket: "請填入",
-  messagingSenderId: "請填入",
-  appId: "請填入",
+  apiKey: "AIzaSyAY5exzunPHfeQBuBTcQMVObcF6A4UgqRU",
+  authDomain: "ot-exam-review.firebaseapp.com",
+  projectId: "ot-exam-review",
+  storageBucket: "ot-exam-review.firebasestorage.app",
+  messagingSenderId: "847450399951",
+  appId: "1:847450399951:web:f4ecbaba0bae189d4083ba",
+  measurementId: "G-G3W9H403YF",
 };
