@@ -279,10 +279,50 @@ function renderStats() {
       '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
       '<div class="bar-pct">' + pct + '%</div></div>';
   }
-  html += '<button class="btn-secondary" onclick="clearAttempts()">清除本機作答紀錄</button>' +
+  html += '<div style="display:flex;gap:8px;margin-top:10px">' +
+    '<button class="btn-secondary" style="margin-top:0;flex:1" onclick="exportAttempts()">📤 匯出紀錄</button>' +
+    '<button class="btn-secondary" style="margin-top:0;flex:1" onclick="document.getElementById(\'importFile\').click()">📥 匯入紀錄</button>' +
+    '<input type="file" id="importFile" accept=".json" style="display:none" onchange="importAttempts(this)">' +
+    '</div>' +
+    '<button class="btn-secondary" onclick="clearAttempts()">清除本機作答紀錄</button>' +
     (fb && fb.user ? '<div style="margin-top:10px;font-size:12px;color:var(--muted)">我的使用者 ID：<code id="myUid" style="word-break:break-all">' + fb.user.uid + '</code> <button class="mini-btn" onclick="navigator.clipboard.writeText(document.getElementById(\'myUid\').textContent);alert(\'已複製\')">複製</button></div>' : '') +
     '</div>';
   el.innerHTML = html;
+}
+function exportAttempts() {
+  const blob = new Blob([JSON.stringify({ app: 'ot-exam-review', exportedAt: new Date().toISOString(), attempts }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ot-review-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importAttempts(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      const arr = Array.isArray(data) ? data : (data.attempts || []);
+      if (!arr.length || !arr.every(a => a && typeof a.qid === 'number' && typeof a.ok === 'boolean')) {
+        throw new Error('格式不符');
+      }
+      const existing = new Set(attempts.map(a => a.qid + '|' + a.ts));
+      let added = 0;
+      for (const a of arr) {
+        if (!existing.has(a.qid + '|' + a.ts)) { attempts.push({ qid: a.qid, ok: a.ok, picked: a.picked || '', ts: a.ts }); added++; }
+      }
+      attempts.sort((a, b) => a.ts - b.ts);
+      saveAttempts();
+      renderStats();
+      alert('✅ 已匯入 ' + added + ' 筆紀錄（重複已略過）');
+    } catch (e) {
+      alert('匯入失敗：檔案格式不正確');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
 }
 function clearAttempts() {
   if (!confirm('確定清除本機全部作答紀錄？')) return;
