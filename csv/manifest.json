@@ -1,0 +1,38 @@
+﻿[
+    {
+        "subject":  "0105",
+        "name":  "解剖學與生理學",
+        "qCount":  80,
+        "picQuestions":  "8"
+    },
+    {
+        "subject":  "0801",
+        "name":  "職能治療學概論",
+        "qCount":  80,
+        "picQuestions":  ""
+    },
+    {
+        "subject":  "0802",
+        "name":  "生理障礙職能治療學",
+        "qCount":  80,
+        "picQuestions":  "13"
+    },
+    {
+        "subject":  "0803",
+        "name":  "心理障礙職能治療學",
+        "qCount":  80,
+        "picQuestions":  ""
+    },
+    {
+        "subject":  "0804",
+        "name":  "小兒職能治療學",
+        "qCount":  80,
+        "picQuestions":  ""
+    },
+    {
+        "subject":  "0805",
+        "name":  "職能治療技術學",
+        "qCount":  80,
+        "picQuestions":  ""
+    }
+]

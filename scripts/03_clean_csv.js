@@ -1,0 +1,109 @@
+// ============================================================
+// 03_clean_csv.js — 清洗 CSV 文字: 機械規則 + 術語修正設定檔
+// 用法: node 03_clean_csv.js <in.csv> <out_cleaned.csv> <out_changelog.csv> [term_fixes.json]
+//   第 4 參數(選用): 該科目的術語修正設定檔, JSON 陣列格式:
+//     [ [原文, 修正後, 類型, 說明], ... ]
+//   省略時只套用機械規則。
+// 產出: 清洗後 CSV(同欄位) + 修正紀錄 CSV(題號,欄位,原文,修正後,類型,說明)
+// ============================================================
+const fs = require('fs');
+
+// ---- 載入術語修正設定(依科目), 預設為空 ----
+let TERM_FIXES = [];
+const termFile = process.argv[5];
+if (termFile) {
+  try {
+    TERM_FIXES = JSON.parse(fs.readFileSync(termFile, 'utf8'));
+    console.log('已載入術語修正設定: ' + termFile + ' (' + TERM_FIXES.length + ' 條)');
+  } catch (e) {
+    console.error('⚠ 無法讀取術語設定檔 ' + termFile + ': ' + e.message);
+    process.exit(1);
+  }
+}
+
+function cleanCell(s, no, field, changes) {
+  let t = s;
+  const before = s;
+  for (const [from, to, type, note] of TERM_FIXES) {
+    if (t.includes(from)) t = t.split(from).join(to);
+  }
+  // 上下標: PDF 提取常見的拆字問題
+  t = t.replace(/HCO\s*3\s*-\s*/g, 'HCO₃⁻');
+  t = t.replace(/NH\s*4\s*\+\s*/g, 'NH₄⁺');
+  t = t.replace(/H\s*\+\s*/g, 'H⁺');
+  // L型統一
+  t = t.replace(/L-\s*型/g, 'L型');
+  t = t.replace(/L\s*型/g, 'L型');
+  // 括號內單詞尾隨空格:（lens ）→（lens）
+  t = t.replace(/（\s*([A-Za-z0-9，,.+~^·'\-]+?)\s*）/g, '（$1）');
+  // 字母/數字與中文間空格:維生素 D → 維生素D、R 波 → R波
+  t = t.replace(/([A-Za-z0-9])\s+([\u4e00-\u9fff])/g, '$1$2');
+  t = t.replace(/([\u4e00-\u9fff])\s+([A-Za-z0-9])(?![A-Za-z])/g, '$1$2');
+  // 字母/數字與全形標點:ATP ？ → ATP？、： mL → ：mL
+  t = t.replace(/([A-Za-z0-9])\s+([\uFF01-\uFF5E\u3001\u3002])/g, '$1$2');
+  t = t.replace(/([\uFF01-\uFF5E\u3001\u3002])\s+([A-Za-z0-9])/g, '$1$2');
+  // 圈號前補分號:前驅物 ② → 前驅物；②
+  t = t.replace(/([\u4e00-\u9fff])\s+([\u2460-\u2473])/g, '$1；$2');
+  // 多餘空白
+  t = t.replace(/ {2,}/g, ' ').trim();
+
+  if (t !== before) {
+    changes.push({ no, field, before, after: t, type: '已修正', note: '機械清洗(見規則表)' });
+  }
+  return t;
+}
+
+function parseRow(line) {
+  const out = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) { if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; } else cur += c; }
+    else if (c === '"') inQ = true;
+    else if (c === ',') { out.push(cur); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur);
+  return out;
+}
+function esc(v) {
+  const s = String(v ?? '').replace(/\r?\n/g, ' ');
+  return /[",]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+async function main() {
+  const [inCsv, outCsv, outChg] = process.argv.slice(2);
+  if (!inCsv || !outCsv || !outChg) {
+    console.error('用法: node 03_clean_csv.js <in.csv> <out_cleaned.csv> <out_changelog.csv> [term_fixes.json]');
+    process.exit(1);
+  }
+  const raw = fs.readFileSync(inCsv, 'utf8').replace(/^\uFEFF/, '');
+  const rows = raw.split(/\r?\n/).filter(l => l.trim() !== '').map(parseRow);
+  const header = rows[0];
+  const dataIdx = {};
+  header.forEach((h, i) => dataIdx[h] = i);
+  const changes = [];
+
+  const outRows = [rows[0]];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i].slice();
+    r[dataIdx['題目']] = cleanCell(r[dataIdx['題目']], r[dataIdx['題號']], '題目', changes);
+    for (const k of ['選項A', '選項B', '選項C', '選項D']) {
+      r[dataIdx[k]] = cleanCell(r[dataIdx[k]], r[dataIdx['題號']], k, changes);
+    }
+    if (dataIdx['答案內容'] !== undefined && dataIdx['正確答案'] !== undefined) {
+      const optKey = '選項' + r[dataIdx['正確答案']];
+      r[dataIdx['答案內容']] = dataIdx[optKey] !== undefined ? r[dataIdx[optKey]] : r[dataIdx['答案內容']];
+    }
+    outRows.push(r);
+  }
+  fs.writeFileSync(outCsv, '\uFEFF' + outRows.map(r => r.map(esc).join(',')).join('\r\n'), 'utf8');
+
+  const chgHeader = ['題號','欄位','原文','修正後','類型','說明'];
+  const chgRows = [chgHeader.join(',')];
+  for (const c of changes) chgRows.push([c.no, c.field, c.before, c.after, c.type, c.note].map(esc).join(','));
+  fs.writeFileSync(outChg, '\uFEFF' + chgRows.join('\r\n'), 'utf8');
+
+  console.log('清洗變更數: ' + changes.length + ' | 輸出: ' + outCsv + ' / ' + outChg);
+  console.log('⚠ 提醒: 請人工檢查術語(見 SOP 第 6 步),並將「需確認」項目補進修正紀錄');
+}
+main().catch(e => { console.error('失敗:', e.message); process.exit(1); });

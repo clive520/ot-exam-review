@@ -1,0 +1,14 @@
+# 原始 PDF（可再生成，不入庫）
+*.pdf
+
+# Node
+node_modules/
+package-lock.json
+
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# 暫存
+*.tmp

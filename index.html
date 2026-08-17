@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>國考衝刺複習</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+<header>
+  <div class="brand" onclick="goHome()">📚 國考衝刺複習</div>
+  <div class="header-right">
+    <div id="authArea" class="auth-area"></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button id="tab-home" class="tab active" onclick="showView('home')">🏠 選擇科目</button>
+  <button id="tab-practice" class="tab" onclick="showView('practice')">✏️ 練習</button>
+  <button id="tab-wrong" class="tab" onclick="showView('wrong')">📕 錯題本</button>
+  <button id="tab-stats" class="tab" onclick="showView('stats')">📊 統計</button>
+</nav>
+
+<main>
+  <section id="view-home" class="view active">
+    <div id="homeContent"></div>
+  </section>
+
+  <section id="view-practice" class="view">
+    <div id="practiceContent"></div>
+  </section>
+
+  <section id="view-wrong" class="view">
+    <div id="wrongContent"></div>
+  </section>
+
+  <section id="view-stats" class="view">
+    <div id="statsContent"></div>
+  </section>
+</main>
+
+<footer>題庫資料來源：考選部公開考古題（115 年職能治療師高考）</footer>
+
+<!-- Firebase SDK（選擇性載入，firebase-config.js 有設定才會啟用） -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

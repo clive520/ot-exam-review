@@ -1,0 +1,134 @@
+/* ============ 基礎 ============ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f7fa; --card: #ffffff; --ink: #1f2937; --muted: #6b7280;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --ok: #16a34a; --bad: #dc2626;
+  --border: #e5e7eb; --radius: 12px;
+}
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+  background: var(--bg); color: var(--ink); line-height: 1.6;
+  max-width: 720px; margin: 0 auto; min-height: 100vh;
+  display: flex; flex-direction: column; padding-bottom: 20px;
+}
+header {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+  justify-content: space-between; padding: 12px 16px;
+  background: var(--primary); color: #fff;
+}
+.brand { font-weight: 700; font-size: 18px; cursor: pointer; }
+.auth-area { font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.auth-area button {
+  background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.5);
+  border-radius: 8px; padding: 4px 10px; font-size: 13px; cursor: pointer;
+}
+.auth-area .user { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tabs {
+  position: sticky; top: 49px; z-index: 9; display: flex; background: var(--card);
+  border-bottom: 1px solid var(--border); overflow-x: auto;
+}
+.tab {
+  flex: 1; min-width: 90px; padding: 10px 4px; border: none; background: none;
+  font-size: 14px; color: var(--muted); cursor: pointer; white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+
+main { flex: 1; padding: 14px; }
+.view { display: none; }
+.view.active { display: block; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; margin-bottom: 12px;
+}
+.card h3 { font-size: 15px; margin-bottom: 8px; }
+.card p { font-size: 14px; }
+
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 10px; }
+
+/* ============ 首頁：科目選擇 ============ */
+.exam-group { margin-bottom: 14px; }
+.exam-group-title { font-size: 15px; font-weight: 700; margin: 6px 2px 8px; }
+.subj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.subj-card {
+  background: var(--card); border: 2px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; cursor: pointer; font-size: 14px; text-align: left;
+  transition: all .15s;
+}
+.subj-card.selected { border-color: var(--primary); background: #eff6ff; }
+.subj-card .subj-name { font-weight: 600; }
+.subj-card .subj-meta { color: var(--muted); font-size: 12px; }
+
+.mode-box { margin-top: 6px; }
+.mode-row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
+.mode-btn {
+  flex: 1; min-width: 110px; padding: 10px; border: 2px solid var(--border); border-radius: var(--radius);
+  background: var(--card); cursor: pointer; font-size: 14px; text-align: center;
+}
+.mode-btn.selected { border-color: var(--primary); background: #eff6ff; font-weight: 700; }
+
+.btn-primary {
+  display: block; width: 100%; padding: 13px; border: none; border-radius: var(--radius);
+  background: var(--primary); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.btn-primary:disabled { background: #a5b4fc; cursor: not-allowed; }
+.btn-secondary {
+  display: block; width: 100%; padding: 11px; border: 1px solid var(--primary);
+  border-radius: var(--radius); background: #fff; color: var(--primary);
+  font-size: 15px; cursor: pointer; margin-top: 8px;
+}
+
+/* ============ 練習 ============ */
+.practice-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+.q-card .q-head { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.q-card .q-stem { font-size: 16px; font-weight: 500; }
+.q-img { max-width: 100%; border-radius: 8px; margin: 10px 0; display: block; }
+
+.opt-list { list-style: none; margin-top: 12px; }
+.opt-item {
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px;
+  border: 2px solid var(--border); border-radius: 10px; margin-bottom: 8px;
+  cursor: pointer; font-size: 15px; background: #fff; transition: all .15s;
+}
+.opt-item:hover { border-color: var(--primary); }
+.opt-letter {
+  flex: 0 0 28px; height: 28px; border-radius: 50%; background: #eef2f7; color: var(--muted);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+}
+.opt-item.correct { border-color: var(--ok); background: #f0fdf4; }
+.opt-item.correct .opt-letter { background: var(--ok); color: #fff; }
+.opt-item.wrong { border-color: var(--bad); background: #fef2f2; }
+.opt-item.wrong .opt-letter { background: var(--bad); color: #fff; }
+.opt-item.disabled { cursor: default; opacity: .75; }
+.opt-item.disabled:hover { border-color: var(--border); }
+
+.result-box { margin-top: 12px; padding: 12px; border-radius: 10px; font-size: 14px; }
+.result-box.ok { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.result-box.bad { background: #fef2f2; border: 1px solid #fecaca; }
+.result-box .r-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.result-box .r-note { margin-top: 6px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 6px 8px; }
+
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+.progress-bar > div { height: 100%; background: var(--primary); transition: width .2s; }
+
+/* ============ 錯題本 / 統計 ============ */
+.wrong-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.wrong-item .q-preview { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.badge { font-size: 12px; border-radius: 6px; padding: 2px 8px; background: #fee2e2; color: var(--bad); font-weight: 600; }
+.badge-ok { background: #dcfce7; color: var(--ok); }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: center; }
+.stat-box .num { font-size: 22px; font-weight: 800; color: var(--primary); }
+.stat-box .lbl { font-size: 12px; color: var(--muted); }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+.bar-row .bar-name { width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-row .bar-track { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+.bar-row .bar-fill { height: 100%; background: var(--primary); border-radius: 5px; }
+.bar-row .bar-pct { width: 44px; text-align: right; color: var(--muted); }
+
+.empty-tip { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
+@media (min-width: 600px) { .subj-grid { grid-template-columns: 1fr 1fr 1fr; } }
