@@ -48,6 +48,7 @@ async function loadData() {
   ]);
   META = await metaRes.json();
   QUESTIONS = await qRes.json();
+  keyMeta = new Map(META.subjects.map(s => [s.key, s]));
   document.getElementById('view-home').dataset.ready = '1';
   renderHome();
 }
@@ -65,31 +66,108 @@ function showView(name) {
   if (name === 'admin') renderAdmin();
   window.scrollTo(0, 0);
 }
-function goHome() { showView('home'); }
+function goHome() { nav = { examCode: null, year: null }; practice.subjCodes = []; showView('home'); }
 
-/* ---------------- 首頁：科目選擇 ---------------- */
+/* ---------------- 首頁：三層導覽（國考 → 年度 → 科目） ---------------- */
+let nav = { examCode: null, year: null };
+let keyMeta = new Map(); // subj key → subject 物件
+
 function renderHome() {
   const el = document.getElementById('homeContent');
   if (!META) { el.innerHTML = '<div class="empty-tip">載入題庫中…</div>'; return; }
-  let html = '';
-  for (const exam of META.examTypes) {
-    const subs = META.subjects.filter(s => s.examCode === exam.code)
-      .sort((a, b) => b.year - a.year);
-    html += '<div class="exam-group"><div class="exam-group-title">🏥 ' + exam.name +
-      '（' + subs.length * 80 + ' 題）</div><div class="subj-grid">';
-    for (const s of subs) {
-      const cnt = QUESTIONS.filter(q => q.subj === s.key).length;
-      const sel = practice.subjCodes.includes(s.key) ? ' selected' : '';
-      html += '<div class="subj-card' + sel + '" data-code="' + s.key + '" onclick="toggleSubject(\'' + s.key + '\')">' +
-        '<div class="subj-name">' + s.name + '</div>' +
-        '<div class="subj-meta">' + s.year + ' 年 · ' + cnt + ' 題</div></div>';
-    }
-    html += '</div></div>';
+  if (!nav.examCode) { renderExamList(el); return; }
+  if (!nav.year) { renderYearList(el); return; }
+  renderSubjectList(el);
+}
+function selectExam(code) { nav.examCode = code; nav.year = null; practice.subjCodes = []; renderHome(); }
+function selectYear(y) { nav.year = y; practice.subjCodes = []; renderHome(); }
+
+/* ---- 進度計算：完成 = 最新作答且答對 ---- */
+function progressOf(filterFn) {
+  const latest = new Map();
+  for (const a of attempts) {
+    const prev = latest.get(a.qid);
+    if (!prev || a.ts > prev.ts) latest.set(a.qid, a);
   }
-  const wrongCount = wrongQuestionIds().length;
+  let total = 0, done = 0, attempted = 0;
+  for (const q of QUESTIONS) {
+    if (!filterFn(q)) continue;
+    total++;
+    const a = latest.get(q.id);
+    if (a) { attempted++; if (a.ok) done++; }
+  }
+  const pct = total ? Math.round(done / total * 100) : 0;
+  const rate = attempted ? Math.round(done / attempted * 100) : 0;
+  return { total, done, attempted, pct, rate };
+}
+function barColor(pct) { return pct < 34 ? 'var(--bad)' : pct < 67 ? '#f59e0b' : 'var(--ok)'; }
+function progressBarHTML(pct) {
+  return '<div class="card-progress"><div style="width:' + pct + '%;background:' + barColor(pct) + '"></div></div>';
+}
+function progressMetaHTML(p) {
+  return '<div class="nav-meta">答對 ' + p.done + ' / ' + p.total + ' 題' +
+    (p.attempted ? ' · 作答 ' + p.attempted + ' 題 · 答對率 ' + p.rate + '%' : '') + '</div>';
+}
+function navCardHTML(title, filterFn, onclick) {
+  const p = progressOf(filterFn);
+  const done = p.total > 0 && p.pct >= 100;
+  return '<div class="card nav-card" onclick="' + onclick + '">' +
+    '<div class="nav-head"><div class="nav-card-title">' + title + '</div>' +
+    (done ? '<span class="badge-ok">✅ 已完成</span>' : '<span class="nav-pct">' + p.pct + '%</span>') + '</div>' +
+    progressBarHTML(p.pct) + progressMetaHTML(p) + '</div>';
+}
+function breadcrumbHTML(examName, year) {
+  let h = '<div class="breadcrumb">🏠 <a href="javascript:void(0)" onclick="goHome()">國考</a>';
+  if (year !== null && year !== undefined) {
+    h += ' › <a href="javascript:void(0)" onclick="selectExam(\'' + nav.examCode + '\')">' + examName + '</a>';
+    h += ' › <b>' + year + ' 年</b>';
+  } else {
+    h += ' › <b>' + examName + '</b>';
+  }
+  return h + '</div>';
+}
+
+function renderExamList(el) {
+  let html = '<div class="exam-group-title">選擇國考認證</div>';
+  for (const exam of META.examTypes) {
+    html += navCardHTML('🏥 ' + exam.name,
+      q => (keyMeta.get(q.subj) || {}).examCode === exam.code,
+      'selectExam(\'' + exam.code + '\')');
+  }
   const updated = META.exportedAt ? new Date(META.exportedAt).toLocaleDateString('zh-TW') : '';
   html += '<div class="card" style="font-size:12px;color:var(--muted)">📚 題庫共 <b>' + META.totalQuestions + '</b> 題 · 資料更新：' + updated +
     ' · <a href="javascript:void(0)" onclick="showHelp()" style="color:var(--primary)">使用說明</a></div>';
+  el.innerHTML = html;
+}
+function renderYearList(el) {
+  const exam = META.examTypes.find(e => e.code === nav.examCode);
+  const years = [...new Set(META.subjects.filter(s => s.examCode === nav.examCode).map(s => s.year))]
+    .sort((a, b) => b - a); // 最新在前
+  let html = breadcrumbHTML(exam.name, null);
+  html += '<div class="exam-group-title">選擇年度</div>';
+  for (const y of years) {
+    html += navCardHTML('🗓 ' + y + ' 年',
+      q => q.year === y && (keyMeta.get(q.subj) || {}).examCode === nav.examCode,
+      'selectYear(' + y + ')');
+  }
+  el.innerHTML = html;
+}
+function renderSubjectList(el) {
+  const exam = META.examTypes.find(e => e.code === nav.examCode);
+  const subs = META.subjects.filter(s => s.examCode === nav.examCode && s.year === nav.year)
+    .sort((a, b) => a.code.localeCompare(b.code));
+  let html = breadcrumbHTML(exam.name, nav.year);
+  html += '<div class="exam-group-title">' + nav.year + ' 年科目（可多選）</div><div class="subj-grid">';
+  for (const s of subs) {
+    const p = progressOf(q => q.subj === s.key);
+    const sel = practice.subjCodes.includes(s.key) ? ' selected' : '';
+    html += '<div class="subj-card' + sel + '" onclick="toggleSubject(\'' + s.key + '\')">' +
+      '<div class="subj-name">' + s.name + '</div>' +
+      progressBarHTML(p.pct) +
+      '<div class="subj-meta">' + progressMetaHTML(p) + '</div></div>';
+  }
+  html += '</div>';
+  const wrongCount = wrongQuestionIds().length;
   html += '<div class="card mode-box"><h3>練習模式</h3><div class="mode-row">' +
     '<div class="mode-btn' + (practice.mode === 'random' ? ' selected' : '') + '" onclick="setMode(\'random\')">🎲 隨機出題</div>' +
     '<div class="mode-btn' + (practice.mode === 'order' ? ' selected' : '') + '" onclick="setMode(\'order\')">🔢 依序練習</div>' +

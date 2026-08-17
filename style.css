@@ -133,6 +133,22 @@ footer { text-align: center; color: var(--muted); font-size: 12px; padding: 10px
 .empty-tip { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; }
 @media (min-width: 600px) { .subj-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
+/* ============ 三層導覽與進度條 ============ */
+.breadcrumb { font-size: 13px; color: var(--muted); margin: 2px 2px 10px; }
+.breadcrumb a { color: var(--primary); text-decoration: none; }
+.nav-card { cursor: pointer; transition: transform .1s; }
+.nav-card:active { transform: scale(.99); }
+.nav-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.nav-card-title { font-size: 16px; font-weight: 700; }
+.nav-pct { font-size: 18px; font-weight: 800; color: var(--primary); }
+.card-progress { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.card-progress > div { height: 100%; border-radius: 4px; transition: width .3s; }
+.nav-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.subj-card .card-progress { margin-top: 6px; }
+.subj-card .nav-meta { font-size: 11px; margin-top: 3px; }
+.exam-group-title { font-size: 15px; font-weight: 700; margin: 6px 2px 8px; }
+
+
 /* ============ 問題回報 ============ */
 .report-btn {
   display: block; width: 100%; margin-top: 10px; padding: 8px;
