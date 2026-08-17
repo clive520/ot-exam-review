@@ -19,6 +19,8 @@ let practice = {
   finished: false,
 };
 let fb = null;            // Firebase 狀態
+let isAdmin = false;      // 是否為管理員
+let reportTarget = null;  // 目前回報的題目物件
 
 /* ---------------- 儲存層（localStorage） ---------------- */
 function loadAttempts() {
@@ -57,6 +59,7 @@ function showView(name) {
   if (name === 'practice') renderPracticeShell();
   if (name === 'wrong') renderWrong();
   if (name === 'stats') renderStats();
+  if (name === 'admin') renderAdmin();
   window.scrollTo(0, 0);
 }
 function goHome() { showView('home'); }
@@ -149,6 +152,7 @@ function renderPracticeShell() {
       '<span class="opt-letter">' + L + '</span><span>' + esc(q.opts[i] || '') + '</span></li>'
     ).join('') + '</ul>' +
     '<div id="resultBox"></div>' +
+    '<button class="report-btn" onclick="reportQuestion(' + q.id + ')">⚠ 回報問題</button>' +
     '<div class="progress-bar"><div style="width:' + (done / total * 100) + '%"></div></div></div>';
 }
 function answer(letter) {
@@ -218,9 +222,10 @@ function renderWrong() {
     html += '<div class="card"><h3>' + subj.name + '（' + bySubj[code].length + '）</h3>';
     for (const q of bySubj[code]) {
       const a = latestAttempt(q.id);
-      html += '<div class="wrong-item" onclick="reviewOne(' + q.id + ')" style="cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border)">' +
-        '<div><b>第 ' + q.qno + ' 題</b><br><span class="q-preview">' + esc(q.stem.slice(0, 40)) + '…</span></div>' +
-        '<span class="badge">你答 ' + a.picked + ' · 正解 ' + q.ans + '</span></div>';
+      html += '<div class="wrong-item" style="padding:6px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="flex:1;cursor:pointer" onclick="reviewOne(' + q.id + ')"><b>第 ' + q.qno + ' 題</b><br><span class="q-preview">' + esc(q.stem.slice(0, 40)) + '…</span></div>' +
+        '<span class="badge">你答 ' + a.picked + ' · 正解 ' + q.ans + '</span>' +
+        '<button class="mini-btn" style="margin-left:4px" onclick="reportQuestion(' + q.id + ')">⚠</button></div>';
     }
     html += '</div>';
   }
@@ -300,8 +305,16 @@ async function initFirebase() {
     };
     fb.auth.onAuthStateChanged(async user => {
       fb.user = user;
+      isAdmin = false;
       renderAuth();
-      if (user) await syncFromCloud();
+      if (user) {
+        try {
+          const doc = await fb.db.collection('admins').doc(user.uid).get();
+          isAdmin = doc.exists;
+        } catch (e) { isAdmin = false; }
+        await syncFromCloud();
+      }
+      renderAdminTab();
     });
     renderAuth();
   } catch (e) { console.warn('Firebase 初始化失敗', e); }
@@ -316,6 +329,124 @@ function renderAuth() {
     el.innerHTML = '<button onclick="fb.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())">🔑 Google 登入</button>';
   }
 }
+function renderAdminTab() {
+  const tab = document.getElementById('tab-admin');
+  if (tab) tab.style.display = isAdmin ? '' : 'none';
+}
+
+/* ---------------- 問題回報（登入後可用） ---------------- */
+function reportQuestion(qid) {
+  if (!fb || !fb.user) {
+    alert('回報問題需要先登入（右上角「🔑 Google 登入」）。\n\n登入後即可回報，方便我們跟你確認問題細節。');
+    return;
+  }
+  const q = QUESTIONS.find(x => x.id === qid);
+  if (!q) return;
+  reportTarget = q;
+  const subj = subjectOf(q.subj);
+  document.getElementById('reportSubj').textContent =
+    (subj ? subj.name : q.subj) + '（' + q.year + ' 年）第 ' + q.qno + ' 題';
+  document.getElementById('reportStem').textContent = q.stem.slice(0, 80) + (q.stem.length > 80 ? '…' : '');
+  document.getElementById('reportType').value = '其他';
+  document.getElementById('reportDesc').value = '';
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReport() {
+  document.getElementById('reportModal').classList.remove('open');
+  reportTarget = null;
+}
+async function submitReport() {
+  if (!reportTarget) return;
+  const type = document.getElementById('reportType').value;
+  const desc = document.getElementById('reportDesc').value.trim();
+  if (!desc) { alert('請填寫問題說明'); return; }
+  const btn = document.getElementById('reportSubmit');
+  btn.disabled = true;
+  try {
+    await fb.db.collection('reports').add({
+      questionId: reportTarget.id,
+      year: reportTarget.year,
+      subjectCode: reportTarget.subj,
+      qno: reportTarget.qno,
+      type,
+      description: desc,
+      reporterUid: fb.user.uid,
+      reporterName: fb.user.displayName || fb.user.email || '考生',
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      handledAt: null,
+      handlerNote: '',
+    });
+    closeReport();
+    alert('✅ 回報已送出，感謝你協助改善題庫！');
+  } catch (e) {
+    console.error('回報失敗', e);
+    alert('回報送出失敗：' + (e.message || e) + '\n\n若 Firestore 尚未建立，請先到 Firebase Console 建立資料庫。');
+  }
+  btn.disabled = false;
+}
+
+/* ---------------- 管理後台（僅管理員） ---------------- */
+let reportsUnsub = null;
+function renderAdmin() {
+  const el = document.getElementById('adminContent');
+  if (!fb || !fb.user) {
+    el.innerHTML = '<div class="empty-tip">請先登入管理員帳號</div>';
+    return;
+  }
+  if (!isAdmin) {
+    el.innerHTML = '<div class="empty-tip">你沒有管理員權限</div>';
+    return;
+  }
+  el.innerHTML = '<div class="empty-tip">載入回報中…</div>';
+  if (reportsUnsub) reportsUnsub();
+  reportsUnsub = fb.db.collection('reports')
+    .orderBy('createdAt', 'desc')
+    .limit(200)
+    .onSnapshot(snap => {
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      const pending = items.filter(r => r.status === 'pending').length;
+      let html = '<div class="card"><h3>📥 問題回報管理（待處理 ' + pending + ' / 共 ' + items.length + '）</h3></div>';
+      if (!items.length) html += '<div class="empty-tip">目前沒有回報</div>';
+      for (const r of items) {
+        const t = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate() : null;
+        const timeStr = t ? t.toLocaleString('zh-TW') : '';
+        const statusLabel = { pending: '待處理', confirmed: '已確認', fixed: '已修正', rejected: '不處理' }[r.status] || r.status;
+        const statusClass = { pending: 'badge', confirmed: 'badge', fixed: 'badge-ok', rejected: 'badge' }[r.status] || 'badge';
+        html += '<div class="card admin-report" style="border-left:4px solid ' +
+          (r.status === 'pending' ? 'var(--bad)' : r.status === 'fixed' ? 'var(--ok)' : 'var(--border)') + '">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+          '<b>[' + esc(r.type) + '] ' + (subjectOf(r.subjectCode) ? subjectOf(r.subjectCode).name : r.subjectCode) +
+          '（' + r.year + ' 年）第 ' + r.qno + ' 題</b>' +
+          '<span class="' + statusClass + '">' + statusLabel + '</span></div>' +
+          '<div class="q-preview" style="font-size:12px;color:var(--muted);margin-bottom:6px">' + timeStr + ' · 回報人：' + esc(r.reporterName || '未知') + '</div>' +
+          '<div style="font-size:13px;margin-bottom:8px">' + esc(r.description) + '</div>' +
+          (r.handlerNote ? '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">📝 處理註記：' + esc(r.handlerNote) + '</div>' : '') +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+          '<input id="note-' + r.id + '" placeholder="處理註記(選填)" style="flex:1;min-width:120px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px">' +
+          '<button class="mini-btn" onclick="setReportStatus(\'' + r.id + '\',\'confirmed\')">✓ 確認</button>' +
+          '<button class="mini-btn ok" onclick="setReportStatus(\'' + r.id + '\',\'fixed\')">🔧 已修正</button>' +
+          '<button class="mini-btn bad" onclick="setReportStatus(\'' + r.id + '\',\'rejected\')">✕ 不處理</button>' +
+          '</div></div>';
+      }
+      el.innerHTML = html;
+    }, err => {
+      el.innerHTML = '<div class="empty-tip">載入失敗：' + esc(err.message) + '<br>（確認 Firestore 已建立、規則已發佈、你是管理員）</div>';
+    });
+}
+async function setReportStatus(id, status) {
+  const note = document.getElementById('note-' + id);
+  const noteText = note ? note.value.trim() : '';
+  try {
+    await fb.db.collection('reports').doc(id).update({
+      status,
+      handledAt: firebase.firestore.FieldValue.serverTimestamp(),
+      handlerNote: noteText || firebase.firestore.FieldValue.delete(),
+    });
+  } catch (e) { alert('更新失敗：' + e.message); }
+}
+
 async function syncToCloud() {
   if (!fb || !fb.user) return;
   try {

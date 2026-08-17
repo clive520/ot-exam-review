@@ -5,5 +5,19 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    // 問題回報：登入者可建立；只有管理員能讀取與處理
+    match /reports/{reportId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if isAdmin();
+    }
+    // 管理員清單（由管理者在 console 手動建立, 禁止外部寫入）
+    match /admins/{uid} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
   }
 }

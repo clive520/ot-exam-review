@@ -20,6 +20,7 @@
   <button id="tab-practice" class="tab" onclick="showView('practice')">✏️ 練習</button>
   <button id="tab-wrong" class="tab" onclick="showView('wrong')">📕 錯題本</button>
   <button id="tab-stats" class="tab" onclick="showView('stats')">📊 統計</button>
+  <button id="tab-admin" class="tab" style="display:none" onclick="showView('admin')">📥 管理</button>
 </nav>
 
 <main>
@@ -38,7 +39,34 @@
   <section id="view-stats" class="view">
     <div id="statsContent"></div>
   </section>
+
+  <section id="view-admin" class="view">
+    <div id="adminContent"></div>
+  </section>
 </main>
+
+<!-- 問題回報 Modal -->
+<div id="reportModal" class="modal-overlay" onclick="if(event.target===this)closeReport()">
+  <div class="modal">
+    <h3>⚠ 回報問題</h3>
+    <div class="report-ctx" id="reportSubj"></div>
+    <div class="report-ctx" id="reportStem"></div>
+    <label class="report-label">問題類型</label>
+    <select id="reportType" class="report-input">
+      <option>錯字</option>
+      <option>答案錯誤</option>
+      <option>圖片問題</option>
+      <option>選項問題</option>
+      <option>其他</option>
+    </select>
+    <label class="report-label">問題說明</label>
+    <textarea id="reportDesc" class="report-input" rows="4" placeholder="請描述你發現的問題（例如：第 X 選項有錯字、答案與解析不符…）"></textarea>
+    <div class="modal-btns">
+      <button class="btn-secondary" style="margin-top:0" onclick="closeReport()">取消</button>
+      <button class="btn-primary" style="margin-top:0" id="reportSubmit" onclick="submitReport()">送出回報</button>
+    </div>
+  </div>
+</div>
 
 <footer>題庫資料來源：考選部公開考古題（115 年職能治療師高考）</footer>
 
