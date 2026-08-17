@@ -65,6 +65,22 @@ function cleanCell(s, no, field, changes) {
   t = t.replace(/([\u4e00-\u9fff])\s+([\u2460-\u2473])/g, '$1；$2');
   // 中文與中文之間的多餘空格(提取缺陷):看不 見 → 看不見
   t = t.replace(/([\u4e00-\u9fff])\s+([\u4e00-\u9fff])/g, '$1$2');
+  // 中文後接全形標點前的空格:最適當 ？ → 最適當？
+  t = t.replace(/([\u4e00-\u9fff])\s+([\uFF01-\uFF5E\u3001\u3002])/g, '$1$2');
+  // 中文後接半形左括號 → 全形:早期療育( → 早期療育（
+  t = t.replace(/([\u4e00-\u9fff])\(/g, '$1（');
+  // 圈號後多餘空格:③ Person → ③Person、⑤ 正中孔 → ⑤正中孔
+  t = t.replace(/([\u2460-\u2473])\s+/g, '$1');
+  // 全形英文字母/數字 → 半形:Ｍajor → Major、ＡＢＣ → ABC
+  const fullHalf = { 'Ａ':'A','Ｂ':'B','Ｃ':'C','Ｄ':'D','Ｅ':'E','Ｆ':'F','Ｇ':'G','Ｈ':'H','Ｉ':'I','Ｊ':'J','Ｋ':'K','Ｌ':'L','Ｍ':'M','Ｎ':'N','Ｏ':'O','Ｐ':'P','Ｑ':'Q','Ｒ':'R','Ｓ':'S','Ｔ':'T','Ｕ':'U','Ｖ':'V','Ｗ':'W','Ｘ':'X','Ｙ':'Y','Ｚ':'Z','０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9' };
+  for (const [from, to] of Object.entries(fullHalf)) {
+    if (t.includes(from)) t = t.split(from).join(to);
+  }
+  // 連字號被空格拆開:DSM- 5 → DSM-5、self- concept → self-concept、skill -building → skill-building
+  t = t.replace(/([A-Za-z0-9])-\s+(?=[A-Za-z0-9])/g, '$1-');
+  t = t.replace(/([A-Za-z0-9])\s+-(?=[A-Za-z0-9])/g, '$1-');
+  // 異體斜線:20∕50 → 20/50
+  t = t.replace(/(\d)∕(?=\d)/g, '$1/');
   // 多餘空白
   t = t.replace(/ {2,}/g, ' ').trim();
 

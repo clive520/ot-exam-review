@@ -1,0 +1,32 @@
+[
+ [
+  "Willer &Corrigan",
+  "Willer & Corrigan",
+  "空格修正",
+  "& 後補空格"
+ ],
+ [
+  "Hakasson",
+  "Håkansson",
+  "錯字修正",
+  "人名拼字 Håkansson"
+ ],
+ [
+  "布朗芬布里納",
+  "布朗芬布倫納",
+  "譯名修正",
+  "Bronfenbrenner 標準譯"
+ ],
+ [
+  "利他（benevolent）",
+  "利他（altruism）",
+  "專有名詞修正",
+  "benevolent=慈善的;利他應為 altruism"
+ ],
+ [
+  "e nvironmental skill -b uilding",
+  "environmental skill-building",
+  "PDF缺陷修正",
+  "單詞內多餘空格"
+ ]
+]
