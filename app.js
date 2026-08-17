@@ -87,6 +87,9 @@ function renderHome() {
     html += '</div></div>';
   }
   const wrongCount = wrongQuestionIds().length;
+  const updated = META.exportedAt ? new Date(META.exportedAt).toLocaleDateString('zh-TW') : '';
+  html += '<div class="card" style="font-size:12px;color:var(--muted)">📚 題庫共 <b>' + META.totalQuestions + '</b> 題 · 資料更新：' + updated +
+    ' · <a href="javascript:void(0)" onclick="showHelp()" style="color:var(--primary)">使用說明</a></div>';
   html += '<div class="card mode-box"><h3>練習模式</h3><div class="mode-row">' +
     '<div class="mode-btn' + (practice.mode === 'random' ? ' selected' : '') + '" onclick="setMode(\'random\')">🎲 隨機出題</div>' +
     '<div class="mode-btn' + (practice.mode === 'order' ? ' selected' : '') + '" onclick="setMode(\'order\')">🔢 依序練習</div>' +
@@ -516,6 +519,26 @@ async function syncFromCloud() {
       renderStats();
     }
   } catch (e) { console.warn('讀取雲端失敗', e); }
+}
+
+/* ---------------- 使用說明 ---------------- */
+function showHelp() {
+  const help = [
+    ['🎲 隨機出題', '從選定科目隨機抽題，適合衝刺複習'],
+    ['🔢 依序練習', '按題號順序練習，適合地毯式掃題'],
+    ['📕 錯題重練', '只練答錯過的題目，直到答對為止'],
+    ['📊 統計', '各科正確率與作答量，找出弱點科目'],
+    ['🔑 Google 登入', '登入後作答紀錄雲端同步，換手機/電腦不遺失'],
+    ['⚠ 回報問題', '發現題目有誤可即時回報（需登入）'],
+    ['📤 匯出/📥 匯入', '未登入時可備份本機紀錄（統計頁）'],
+  ];
+  const list = help.map(([t, d]) => '<b>' + t + '</b>：' + d + '<br>').join('');
+  const box = document.createElement('div');
+  box.className = 'modal-overlay open';
+  box.style.cssText = 'display:flex;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px';
+  box.innerHTML = '<div class="modal"><h3>📖 使用說明</h3><div style="font-size:14px;line-height:2">' + list +
+    '</div><div class="modal-btns"><button class="btn-primary" style="margin-top:0" onclick="this.closest(\'.modal-overlay\').remove()">知道了</button></div></div>';
+  document.body.appendChild(box);
 }
 
 /* ---------------- 工具 ---------------- */
