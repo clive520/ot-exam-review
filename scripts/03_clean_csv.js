@@ -128,8 +128,19 @@ async function main() {
       r[dataIdx[k]] = cleanCell(r[dataIdx[k]], r[dataIdx['題號']], k, changes);
     }
     if (dataIdx['答案內容'] !== undefined && dataIdx['正確答案'] !== undefined) {
-      const optKey = '選項' + r[dataIdx['正確答案']];
-      r[dataIdx['答案內容']] = dataIdx[optKey] !== undefined ? r[dataIdx[optKey]] : r[dataIdx['答案內容']];
+      const ansStr = String(r[dataIdx['正確答案']] || '');
+      const letters = ansStr.split('');
+      if (letters.length === 1) {
+        const optKey = '選項' + ansStr;
+        r[dataIdx['答案內容']] = dataIdx[optKey] !== undefined ? r[dataIdx[optKey]] : r[dataIdx['答案內容']];
+      } else {
+        // 多選(如 BC、ABCD): 併列各選項的清洗後文字
+        const parts = letters.map(L => {
+          const k = '選項' + L;
+          return dataIdx[k] !== undefined ? r[dataIdx[k]] : '';
+        }).filter(Boolean);
+        r[dataIdx['答案內容']] = parts.join('；');
+      }
     }
     outRows.push(r);
   }

@@ -100,10 +100,11 @@ async function main() {
       const optD = idx['選項D'] !== undefined ? r[idx['選項D']] : null;
       const ans = (r[idx['正確答案']] || '').toUpperCase();
       const ansText = idx['答案內容'] !== undefined ? r[idx['答案內容']] : '';
+      const orig = idx['原始答案'] !== undefined && r[idx['原始答案']] ? (r[idx['原始答案']] || '').toUpperCase() : ans;
+      const note = idx['更正備註'] !== undefined && r[idx['更正備註']] ? r[idx['更正備註']] : null;
       const img = idx['圖片檔案'] !== undefined ? r[idx['圖片檔案']] : '';
       const imgFiles = (img && img !== '無') ? img : null;
-      // 目前 115 無更正答案: original = final
-      insQ.run(subjectId, qno, stem, optA, optB, optC, optD, ans, ans, ansText, null, imgFiles);
+      insQ.run(subjectId, qno, stem, optA, optB, optC, optD, orig, ans, ansText, note, imgFiles);
       count++;
     }
     console.log(subj.code + ' ' + subj.name + ': 匯入 ' + count + ' 題');
