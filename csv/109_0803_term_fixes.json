@@ -1,1 +1,86 @@
-[]
+[
+ [
+  "Antecedent，Behavior，Condition",
+  "Antecedent, Behavior, Condition",
+  "標點修正",
+  "英文內全形逗號改半形"
+ ],
+ [
+  "Antecedent，Behavior，Consequence",
+  "Antecedent, Behavior, Consequence",
+  "標點修正",
+  "英文內全形逗號改半形"
+ ],
+ [
+  "Accountability，Behavior，Consequence",
+  "Accountability, Behavior, Consequence",
+  "標點修正",
+  "英文內全形逗號改半形"
+ ],
+ [
+  "Attitudes，Behavior，Consequence",
+  "Attitudes, Behavior, Consequence",
+  "標點修正",
+  "英文內全形逗號改半形"
+ ],
+ [
+  "affect blunting)",
+  "affect blunting）",
+  "括號修正",
+  "半形右括號改全形"
+ ],
+ [
+  "Level₄",
+  "Level 4",
+  "格式修正",
+  "下標數字改正常"
+ ],
+ [
+  "Level₃",
+  "Level 3",
+  "格式修正",
+  "下標數字改正常"
+ ],
+ [
+  "Level₅",
+  "Level 5",
+  "格式修正",
+  "下標數字改正常"
+ ],
+ [
+  "認知層階層",
+  "認知階層",
+  "錯字修正",
+  "多「層」字"
+ ],
+ [
+  "Refernce",
+  "Reference",
+  "錯字修正",
+  "Refernce→Reference"
+ ],
+ [
+  "paranatal period",
+  "perinatal period",
+  "專有名詞修正",
+  "標準:週產期(perinatal period)"
+ ],
+ [
+  "Depersonalization Disorder",
+  "Depersonalization/Derealization Disorder",
+  "專有名詞修正",
+  "DSM-5 官方名稱含 Derealization"
+ ],
+ [
+  "emotional modulation",
+  "emotion regulation",
+  "專有名詞修正",
+  "DBT 標準模組名"
+ ],
+ [
+  "open to experience",
+  "openness to experience",
+  "專有名詞修正",
+  "標準特質名 openness"
+ ]
+]
