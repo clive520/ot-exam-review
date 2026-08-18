@@ -48,6 +48,7 @@ function cleanCell(s, no, field, changes) {
     '易':'易','識':'識','參':'參','來':'來','不':'不','令':'令','見':'見',
     '律':'律','六':'六','讀':'讀','量':'量','領':'領','類':'類',
     '療':'療','暈':'暈','輪':'輪','離':'離','拉':'拉','說':'說','便':'便',
+    '若':'若','例':'例','粒':'粒','狀':'狀','率':'率','車':'車','來':'來','見':'見',
   };
   for (const [from, to] of Object.entries(compatMap)) {
     if (t.includes(from)) t = t.split(from).join(to);
@@ -85,6 +86,11 @@ function cleanCell(s, no, field, changes) {
   t = t.replace(/(\d)∕(?=\d)/g, '$1/');
   // 多餘空白
   t = t.replace(/ {2,}/g, ' ').trim();
+
+  // 第二輪術語修正: 明確修正優先於全域規則(例: MMT₄→MMT 4 不被下標規則還原)
+  for (const [from, to] of TERM_FIXES) {
+    if (t.includes(from)) t = t.split(from).join(to);
+  }
 
   if (t !== before) {
     changes.push({ no, field, before, after: t, type: '已修正', note: '機械清洗(見規則表)' });
