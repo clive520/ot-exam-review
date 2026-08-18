@@ -66,10 +66,10 @@ function showView(name) {
   if (name === 'admin') renderAdmin();
   window.scrollTo(0, 0);
 }
-function goHome() { nav = { examCode: null, year: null }; practice.subjCodes = []; showView('home'); }
+function goHome() { nav = { examCode: null, year: null, session: '' }; practice.subjCodes = []; showView('home'); }
 
 /* ---------------- 首頁：三層導覽（國考 → 年度 → 科目） ---------------- */
-let nav = { examCode: null, year: null };
+let nav = { examCode: null, year: null, session: '' };
 let keyMeta = new Map(); // subj key → subject 物件
 
 function renderHome() {
@@ -78,9 +78,17 @@ function renderHome() {
   if (!nav.examCode) { renderExamList(el); return; }
   if (!nav.year) { renderYearList(el); return; }
   renderSubjectList(el);
+  const subjCount = META.subjects.filter(s => s.examCode === nav.examCode && s.year === nav.year && (s.session || '') === nav.session).length;
+  if (subjCount === 0) { nav.year = null; nav.session = ''; renderYearList(el); }
 }
-function selectExam(code) { nav.examCode = code; nav.year = null; practice.subjCodes = []; renderHome(); }
-function selectYear(y) { nav.year = y; practice.subjCodes = []; renderHome(); }
+function selectExam(code) { nav.examCode = code; nav.year = null; nav.session = ''; practice.subjCodes = []; renderHome(); }
+function selectYear(y, session) { nav.year = y; nav.session = session || ''; practice.subjCodes = []; renderHome(); }
+function sessionLabel(s) {
+  if (!s) return '';
+  if (s === '01') return '第一次';
+  if (s === '02') return '第二次';
+  return '第' + s + '次';
+}
 
 /* ---- 進度計算：完成 = 最新作答且答對 ---- */
 function progressOf(filterFn) {
@@ -94,7 +102,7 @@ function progressOf(filterFn) {
     if (!filterFn(q)) continue;
     total++;
     const a = latest.get(q.id);
-    if (a) { attempted++; if (a.ok) done++; }
+    if (a) { attempted++; if (effectiveOk(a)) done++; }
   }
   const pct = total ? Math.round(done / total * 100) : 0;
   const rate = attempted ? Math.round(done / attempted * 100) : 0;
@@ -116,11 +124,11 @@ function navCardHTML(title, filterFn, onclick) {
     (done ? '<span class="badge-ok">✅ 已完成</span>' : '<span class="nav-pct">' + p.pct + '%</span>') + '</div>' +
     progressBarHTML(p.pct) + progressMetaHTML(p) + '</div>';
 }
-function breadcrumbHTML(examName, year) {
+function breadcrumbHTML(examName, year, session) {
   let h = '<div class="breadcrumb">🏠 <a href="javascript:void(0)" onclick="goHome()">國考</a>';
   if (year !== null && year !== undefined) {
     h += ' › <a href="javascript:void(0)" onclick="selectExam(\'' + nav.examCode + '\')">' + examName + '</a>';
-    h += ' › <b>' + year + ' 年</b>';
+    h += ' › <b>' + year + ' 年' + sessionLabel(session || '') + '</b>';
   } else {
     h += ' › <b>' + examName + '</b>';
   }
@@ -141,23 +149,30 @@ function renderExamList(el) {
 }
 function renderYearList(el) {
   const exam = META.examTypes.find(e => e.code === nav.examCode);
-  const years = [...new Set(META.subjects.filter(s => s.examCode === nav.examCode).map(s => s.year))]
-    .sort((a, b) => b - a); // 最新在前
+  // 依 (年度, 場次) 分組
+  const groups = [];
+  const seen = new Set();
+  for (const s of META.subjects.filter(x => x.examCode === nav.examCode)) {
+    const gkey = s.year + '|' + (s.session || '');
+    if (!seen.has(gkey)) { seen.add(gkey); groups.push({ year: s.year, session: s.session || '' }); }
+  }
+  groups.sort((a, b) => b.year - a.year || String(a.session).localeCompare(String(b.session)));
   let html = breadcrumbHTML(exam.name, null);
   html += '<div class="exam-group-title">選擇年度</div>';
-  for (const y of years) {
-    html += navCardHTML('🗓 ' + y + ' 年',
-      q => q.year === y && (keyMeta.get(q.subj) || {}).examCode === nav.examCode,
-      'selectYear(' + y + ')');
+  for (const g of groups) {
+    const title = '🗓 ' + g.year + ' 年' + sessionLabel(g.session);
+    html += navCardHTML(title,
+      q => q.year === g.year && (q.session || '') === g.session && (keyMeta.get(q.subj) || {}).examCode === nav.examCode,
+      'selectYear(' + g.year + ', \'' + g.session + '\')');
   }
   el.innerHTML = html;
 }
 function renderSubjectList(el) {
   const exam = META.examTypes.find(e => e.code === nav.examCode);
-  const subs = META.subjects.filter(s => s.examCode === nav.examCode && s.year === nav.year)
+  const subs = META.subjects.filter(s => s.examCode === nav.examCode && s.year === nav.year && (s.session || '') === nav.session)
     .sort((a, b) => a.code.localeCompare(b.code));
-  let html = breadcrumbHTML(exam.name, nav.year);
-  html += '<div class="exam-group-title">' + nav.year + ' 年科目（可多選）</div><div class="subj-grid">';
+  let html = breadcrumbHTML(exam.name, nav.year, nav.session);
+  html += '<div class="exam-group-title">' + nav.year + ' 年' + sessionLabel(nav.session) + '科目（可多選）</div><div class="subj-grid">';
   for (const s of subs) {
     const p = progressOf(q => q.subj === s.key);
     const sel = practice.subjCodes.includes(s.key) ? ' selected' : '';
@@ -282,13 +297,23 @@ function renderPracticeSummary() {
 }
 
 /* ---------------- 錯題本 ---------------- */
-function wrongQuestionIds() {
+// 每題最新作答
+function latestAttempts() {
   const map = new Map();
   for (const a of attempts) {
     const prev = map.get(a.qid);
     if (!prev || a.ts > prev.ts) map.set(a.qid, a);
   }
-  return [...map.values()].filter(a => !a.ok).map(a => a.qid);
+  return [...map.values()];
+}
+// 以「目前答案」重新判定對錯（避免舊資料/題號位移造成的過期 ok 旗標）
+function effectiveOk(a) {
+  const q = QUESTIONS.find(x => x.id === a.qid);
+  if (!q) return false;
+  return q.ans.includes(a.picked || '');
+}
+function wrongQuestionIds() {
+  return latestAttempts().filter(a => !effectiveOk(a)).map(a => a.qid);
 }
 function renderWrong() {
   const el = document.getElementById('wrongContent');
@@ -339,7 +364,7 @@ function renderStats() {
   }
   const latest = [...map.values()];
   const total = latest.length;
-  const correct = latest.filter(a => a.ok).length;
+  const correct = latest.filter(a => effectiveOk(a)).length;
   const bySubj = {};
   for (const a of latest) {
     const q = QUESTIONS.find(x => x.id === a.qid);
@@ -354,7 +379,7 @@ function renderStats() {
   if (!codes.length) html += '<div class="empty-tip">還沒有作答紀錄，開始練習吧！</div>';
   for (const code of codes) {
     const arr = bySubj[code];
-    const ok = arr.filter(a => a.ok).length;
+    const ok = arr.filter(a => effectiveOk(a)).length;
     const pct = Math.round(ok / arr.length * 100);
     html += '<div class="bar-row"><div class="bar-name">' + subjectOf(code).name + '</div>' +
       '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
