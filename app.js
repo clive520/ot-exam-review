@@ -249,7 +249,9 @@ function renderPracticeShell() {
     (q.img ? '<img class="q-img" src="' + q.img.split('；')[0] + '" alt="題目圖片">' : '') +
     '<ul class="opt-list">' + ['A','B','C','D'].map((L, i) =>
       '<li class="opt-item" data-opt="' + L + '" onclick="answer(\'' + L + '\')">' +
-      '<span class="opt-letter">' + L + '</span><span>' + esc(q.opts[i] || '') + '</span></li>'
+      '<span class="opt-letter">' + L + '</span><span>' +
+      (q.optIsImg ? '<img class="opt-img" src="' + (q.opts[i] || '') + '" alt="選項' + L + '">' : esc(q.opts[i] || '')) +
+      '</span></li>'
     ).join('') + '</ul>' +
     '<div id="resultBox"></div>' +
     '<button class="report-btn" onclick="reportQuestion(' + q.id + ')">⚠ 回報問題</button>' +

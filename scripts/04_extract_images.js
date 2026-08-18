@@ -51,12 +51,14 @@ function detectBands(w, h, data, denseRatio = 0.18, minH = 15, gap = 3) {
 }
 
 async function main() {
-  const [pdfPath, outDir, scaleArg] = process.argv.slice(2);
+  const [pdfPath, outDir, scaleArg, denseArg, minHArg] = process.argv.slice(2);
   if (!pdfPath || !outDir) {
-    console.error('用法: node 04_extract_images.js <input.pdf> <out_dir> [scale]');
+    console.error('用法: node 04_extract_images.js <input.pdf> <out_dir> [scale] [denseRatio] [minH]');
     process.exit(1);
   }
   const SCALE = scaleArg ? parseFloat(scaleArg) : 2;
+  const DENSE = denseArg ? parseFloat(denseArg) : 0.18;
+  const MINH = minHArg ? parseFloat(minHArg) : 15;
   const pageDir = path.join(outDir, 'pages');
   const imgDir = path.join(outDir, 'images');
   fs.mkdirSync(pageDir, { recursive: true });
@@ -105,7 +107,7 @@ async function main() {
 
     // 3) 圖形區塊偵測
     const data32 = ctx.getImageData(0, 0, pw, ph).data;
-    const bands = detectBands(pw, ph, data32);
+    const bands = detectBands(pw, ph, data32, DENSE, MINH);
 
     // 4) 區塊 → 題號(找區塊上方的最近題號行; 頁首區塊用上一頁最後題號) → 裁切
     let figIdx = 0;

@@ -85,6 +85,30 @@ async function main() {
       img,
     };
   });
+  // 圖片選項支援: 選項全為空白但有圖片時(如 Hill's model 圖形題), 以圖片作為選項
+  let optImgCount = 0;
+  for (const q of questions) {
+    const hasText = (q.opts || []).some(o => o && String(o).trim());
+    if (!hasText && q.img) {
+      const imgs = q.img.split('；').filter(Boolean);
+      // 優先使用 _選項X 命名(由 _crop_opt.js 產出): 依 A-D 排序
+      const optMap = { A: null, B: null, C: null, D: null };
+      for (const f of imgs) {
+        const m = f.match(/_選項([ABCD])\.png$/);
+        if (m && optMap[m[1]] === null) optMap[m[1]] = f;
+      }
+      const optImgs = ['A','B','C','D'].map(L => optMap[L]).filter(Boolean);
+      if (optImgs.length >= 2) {
+        q.optIsImg = true;
+        q.opts = optImgs;
+        optImgCount++;
+      } else if (imgs.length >= 2) {
+        q.optIsImg = true;
+        q.opts = imgs.slice(0, 4);
+        optImgCount++;
+      }
+    }
+  }
   fs.writeFileSync(path.join(appDir, 'data', 'questions.json'), JSON.stringify(questions), 'utf8');
 
   const imgCount = questions.filter(q => q.img).length;
