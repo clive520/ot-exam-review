@@ -51,7 +51,8 @@ async function main() {
       code TEXT NOT NULL,
       name TEXT NOT NULL,
       year INTEGER NOT NULL,
-      UNIQUE (exam_type_id, year, code)
+      session TEXT NOT NULL DEFAULT '',
+      UNIQUE (exam_type_id, year, session, code)
     );
     CREATE TABLE questions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,14 +71,22 @@ async function main() {
   `);
 
   const insExam = db.prepare('INSERT INTO exam_types (code, name) VALUES (?, ?)');
-  const insSubj = db.prepare('INSERT INTO subjects (exam_type_id, code, name, year) VALUES (?, ?, ?, ?)');
+  const insSubj = db.prepare('INSERT INTO subjects (exam_type_id, code, name, year, session) VALUES (?, ?, ?, ?, ?)');
   const insQ = db.prepare('INSERT INTO questions (subject_id, qno, stem, opt_a, opt_b, opt_c, opt_d, answer_original, answer_final, answer_text, correction_note, image_files) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 
-  const examInfo = insExam.run(cfg.examType.code, cfg.examType.name);
-  const examTypeId = Number(examInfo.lastInsertRowid);
+  // 支援單一(舊格式)與多國考(新格式)設定
+  const examTypeCfgs = cfg.examTypes || [{ ...cfg.examType, subjects: cfg.subjects }];
+  const examTypeIds = new Map();
+  for (const et of examTypeCfgs) {
+    const info = insExam.run(et.code, et.name);
+    examTypeIds.set(et.code, Number(info.lastInsertRowid));
+  }
   let totalQ = 0;
+  let totalSubj = 0;
 
-  for (const subj of cfg.subjects) {
+  for (const et of examTypeCfgs) {
+  const examTypeId = examTypeIds.get(et.code);
+  for (const subj of et.subjects) {
     const csvPath = path.resolve(subj.csv);
     if (!fs.existsSync(csvPath)) { console.error('找不到 CSV: ' + csvPath); process.exit(1); }
     const raw = fs.readFileSync(csvPath, 'utf8').replace(/^\uFEFF/, '');
@@ -85,8 +94,9 @@ async function main() {
     const header = rows[0];
     const idx = {};
     header.forEach((h, i) => idx[h] = i);
-    const subjYear = subj.year !== undefined ? subj.year : cfg.year;
-  const subjInfo = insSubj.run(examTypeId, subj.code, subj.name, subjYear);
+    const subjYear = subj.year !== undefined ? subj.year : (et.year !== undefined ? et.year : 0);
+  const subjSession = subj.session !== undefined ? subj.session : '';
+  const subjInfo = insSubj.run(examTypeId, subj.code, subj.name, subjYear, subjSession);
     const subjectId = Number(subjInfo.lastInsertRowid);
     let count = 0;
 
@@ -109,9 +119,11 @@ async function main() {
     }
     console.log(subj.code + ' ' + subj.name + ': 匯入 ' + count + ' 題');
     totalQ += count;
+    totalSubj++;
+  }
   }
 
   db.close();
-  console.log('完成! 考試類型: ' + cfg.examType.name + ' | 科目: ' + cfg.subjects.length + ' | 題數: ' + totalQ + ' | 資料庫: ' + dbPath);
+  console.log('完成! 考試類型: ' + examTypeCfgs.length + ' | 科目: ' + totalSubj + ' | 題數: ' + totalQ + ' | 資料庫: ' + dbPath);
 }
 main().catch(e => { console.error('失敗:', e && e.stack || e.message); process.exit(1); });

@@ -3,6 +3,10 @@
     {
       "code": "OT",
       "name": "職能治療師"
+    },
+    {
+      "code": "PT",
+      "name": "物理治療師"
     }
   ],
   "subjects": [
@@ -11,6 +15,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -18,6 +23,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -25,6 +31,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -32,6 +39,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -39,6 +47,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -46,6 +55,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 109,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -53,6 +63,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -60,6 +71,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -67,6 +79,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -74,6 +87,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -81,6 +95,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -88,6 +103,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 110,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -95,6 +111,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -102,6 +119,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -109,6 +127,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -116,6 +135,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -123,6 +143,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -130,6 +151,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 111,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -137,6 +159,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -144,6 +167,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -151,6 +175,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -158,6 +183,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -165,6 +191,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -172,6 +199,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 112,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -179,6 +207,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -186,6 +215,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -193,6 +223,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -200,6 +231,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -207,6 +239,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -214,6 +247,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 113,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -221,6 +255,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -228,6 +263,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -235,6 +271,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -242,6 +279,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -249,6 +287,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -256,6 +295,7 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 114,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -263,6 +303,7 @@
       "code": "0105",
       "name": "解剖學與生理學",
       "year": 115,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -270,6 +311,7 @@
       "code": "0801",
       "name": "職能治療學概論",
       "year": 115,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -277,6 +319,7 @@
       "code": "0802",
       "name": "生理障礙職能治療學",
       "year": 115,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -284,6 +327,7 @@
       "code": "0803",
       "name": "心理障礙職能治療學",
       "year": 115,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -291,6 +335,7 @@
       "code": "0804",
       "name": "小兒職能治療學",
       "year": 115,
+      "session": "",
       "examCode": "OT"
     },
     {
@@ -298,9 +343,58 @@
       "code": "0805",
       "name": "職能治療技術學",
       "year": 115,
+      "session": "",
       "examCode": "OT"
+    },
+    {
+      "key": "115-02-0701",
+      "code": "0701",
+      "name": "神經疾病物理治療學",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
+    },
+    {
+      "key": "115-02-0702",
+      "code": "0702",
+      "name": "骨科疾病物理治療學",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
+    },
+    {
+      "key": "115-02-0703",
+      "code": "0703",
+      "name": "心肺疾病與小兒疾病物理治療學",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
+    },
+    {
+      "key": "115-02-0704",
+      "code": "0704",
+      "name": "物理治療基礎學",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
+    },
+    {
+      "key": "115-02-0705",
+      "code": "0705",
+      "name": "物理治療學概論",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
+    },
+    {
+      "key": "115-02-0706",
+      "code": "0706",
+      "name": "物理治療技術學",
+      "year": 115,
+      "session": "02",
+      "examCode": "PT"
     }
   ],
-  "exportedAt": "2026-08-18T12:00:15.950Z",
-  "totalQuestions": 3360
+  "exportedAt": "2026-08-18T12:35:51.407Z",
+  "totalQuestions": 3840
 }

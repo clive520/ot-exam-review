@@ -19,28 +19,46 @@ async function main() {
   }
   const db = new DatabaseSync(dbPath, { readOnly: true });
 
+  // 可選第 4 參數: db_config JSON → 依 csv 路徑推導各科圖片來源目錄(支援非標準目錄結構)
+  let imgDirByKey = new Map();
+  const cfgPath = process.argv[5];
+  if (cfgPath && fs.existsSync(cfgPath)) {
+    const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8').replace(/^\uFEFF/, ''));
+    const examTypeCfgs = cfg.examTypes || [{ ...cfg.examType, subjects: cfg.subjects }];
+    for (const et of examTypeCfgs) {
+      for (const s of et.subjects) {
+        const key = s.year + (s.session ? '-' + s.session : '') + '-' + s.code;
+        const csvDir = path.dirname(path.resolve(s.csv));
+        imgDirByKey.set(key, path.join(csvDir, 'images', 'images'));
+      }
+    }
+  }
+
   const examTypes = db.prepare('SELECT * FROM exam_types ORDER BY id').all();
-  const subjects = db.prepare('SELECT s.*, e.code AS exam_code FROM subjects s JOIN exam_types e ON e.id = s.exam_type_id ORDER BY s.year, s.code').all();
-  const qRows = db.prepare('SELECT q.*, s.code AS subj_code, s.year, s.name AS subj_name FROM questions q JOIN subjects s ON s.id = q.subject_id ORDER BY s.year, s.code, q.qno').all();
+  const subjects = db.prepare('SELECT s.*, e.code AS exam_code FROM subjects s JOIN exam_types e ON e.id = s.exam_type_id ORDER BY s.year, s.session, s.code').all();
+  const qRows = db.prepare('SELECT q.*, s.code AS subj_code, s.year, s.session, s.name AS subj_name FROM questions q JOIN subjects s ON s.id = q.subject_id ORDER BY s.year, s.session, s.code, q.qno').all();
 
   fs.mkdirSync(path.join(appDir, 'data'), { recursive: true });
 
   const meta = {
     examTypes: examTypes.map(e => ({ code: e.code, name: e.name })),
-    subjects: subjects.map(s => ({ key: s.year + '-' + s.code, code: s.code, name: s.name, year: s.year, examCode: s.exam_code })),
+    subjects: subjects.map(s => ({ key: s.year + (s.session ? '-' + s.session : '') + '-' + s.code, code: s.code, name: s.name, year: s.year, session: s.session, examCode: s.exam_code })),
     exportedAt: new Date().toISOString(),
     totalQuestions: qRows.length,
   };
   fs.writeFileSync(path.join(appDir, 'data', 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
 
   const questions = qRows.map(q => {
-    const subjKey = q.year + '-' + q.subj_code;
+    const subjKey = q.year + (q.session ? '-' + q.session : '') + '-' + q.subj_code;
     let img = null;
     if (q.image_files) {
       const files = q.image_files.split('；').map(f => f.trim()).filter(Boolean);
       const mapped = files.map(f => {
         const base = path.basename(f);
-        const src = path.join(imagesRoot, String(q.year), q.subj_code, 'images', 'images', base);
+        const dirOverride = imgDirByKey.get(subjKey);
+        const src = dirOverride
+          ? path.join(dirOverride, base)
+          : path.join(imagesRoot, String(q.year), q.subj_code, 'images', 'images', base);
         const destDir = path.join(appDir, 'images', subjKey);
         fs.mkdirSync(destDir, { recursive: true });
         if (fs.existsSync(src)) {
@@ -57,6 +75,7 @@ async function main() {
       id: q.id,
       subj: subjKey,
       year: q.year,
+      session: q.session || '',
       qno: q.qno,
       stem: q.stem,
       opts: [q.opt_a, q.opt_b, q.opt_c, q.opt_d],
